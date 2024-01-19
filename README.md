@@ -1,5 +1,5 @@
 # Polimorphism
-A procedural macro to imitate ad hoc polimorphism (function overloading) which can be seen and found in many modern programming languages. Can be used similarly to an `fn` or `impl` declaration, but `polimorphism` allows for duplicate `fn` names with different signitures (types as parameters). This implementation of `polimorphism` bypasses the orphan rule with a `Local` type.
+#### A procedural macro to imitate ad hoc polimorphism (function overloading) which can be seen and found in many modern programming languages. Can be used similarly to an `fn` or `impl` declaration, but `polimorphism` allows for duplicate `fn` names with different signitures (types as parameters). This implementation of `polimorphism` bypasses the orphan rule with a `Local` type.
 ---
 ## Example
 ```
