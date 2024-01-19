@@ -1,0 +1,17 @@
+[package]
+name = "polimorphism"
+version = "0.7.0"
+edition = "2021"
+license="MIT"
+author = "Nyx"
+keywords = ["functional", "polimorphism"]
+categories = ["parser-implementations", "rust-patterns", "development-tools"]
+description = "Function overloading via a procedural macro"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
