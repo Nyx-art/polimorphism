@@ -239,7 +239,7 @@ fn get_crate_of_call(call: TokenStream) -> (String,Vec<String>) {
 static mut DEFINED_POLI_FNS: Vec<String>=vec![];
 
 /// ## Polimorphism
-/// A procedural macro to imitate polimorphism which can be seen and found
+/// A procedural macro to imitate polymorphysm which can be seen and found
 /// in many modern programming languages. Can be used similarly to an `fn`
 /// or `impl` declaration, but `polimorphism` allows for duplicate `fn` names
 /// with different signitures (types as parameters). This implementation of
