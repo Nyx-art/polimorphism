@@ -57,10 +57,11 @@ fn parse_function(f: TokenStream) -> Vec<String> {
     let mut out=[();6].into_iter().map(|_| String::new()).collect::<Vec<_>>();
     let tt=f.into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
     let mut time=0;
+    let mut depth=0;
     for tok in &tt {
         match time {
             0 => {
-                if tok=="<" { time=1; }
+                if tok=="<" { time=1; depth+=1; }
                 else if tok.contains("(") && out[0].contains("fn") { out[3]+=tok; time=3; }
                 else {
                     if out[1].is_empty() && out[0].contains("fn") { out[1]+=tok; }
@@ -68,7 +69,15 @@ fn parse_function(f: TokenStream) -> Vec<String> {
                 }
             }
             1 => {
-                if tok==">" { time=2; }
+                if tok=="<" { depth+=1; }
+                if tok==">" { 
+                    depth-=1; 
+                    if depth==0 {time=2;}
+                    else {
+                        out[2]+=tok;
+                        out[2]+=" ";
+                    }
+                }
                 else {
                     out[2]+=tok;
                     if tok!="'" { out[2]+=" "; }
@@ -96,14 +105,23 @@ fn parse_impl(im: TokenStream) -> Vec<String> {
     let tt=im.into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
     let mut time=0;
     let is_impl=&tt[1]=="<";
+    let mut depth=0;
     for tok in &tt {
         match time {
             0 => {
-                if is_impl && tok=="<" { time=1; }
+                if is_impl && tok=="<" { depth+=1; time=1; }
                 else if !is_impl { time=2; }
             }
             1 => {
-                if tok==">" { time=2; }
+                if tok=="<" { depth+=1; }
+                if tok==">" { 
+                    depth-=1; 
+                    if depth==0 {time=2;}
+                    else {
+                        out[0]+=tok;
+                        out[0]+=" ";
+                    }
+                }
                 else {
                     out[0]+=tok;
                     if tok!="'" {
@@ -325,7 +343,7 @@ pub fn polimorphism(_item: TokenStream) -> TokenStream {
                 var=var.replace("Self ", &imp[1]);
                 let impl_loc=merge_impls(&imp[0], &func[2]);
                 out+=&format!("
-                impl<{}> Local<(PhantomData<{}>,{})> {{\n
+                impl<{}> Local<(std::marker::PhantomData<{}>,{})> {{\n
                     {}(self) {} {{\n
                         let Local{{ inner: (_,{})}}=self;\n
                         {}\n
@@ -423,7 +441,7 @@ pub fn polimorphism(_item: TokenStream) -> TokenStream {
                     strc[1]=remove_first_last(tok);
                 }
             }
-            let out=format!("{cr}Local::__poli_new((PhantomData::<{}>,{})).{}()",strc[0],strc[1],strc[2]);
+            let out=format!("{cr}Local::__poli_new((std::marker::PhantomData::<{}>,{})).{}()",strc[0],strc[1],strc[2]);
             return out.parse().unwrap()
         }
         else {
