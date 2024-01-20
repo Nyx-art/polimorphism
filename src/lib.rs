@@ -187,6 +187,15 @@ fn get_type_var_refer(s: &String) -> (String,String,String) {
 }
 
 fn merge_impls(i1: &String, i2: &String) -> String {
+    if i1.is_empty() && i2.is_empty() {
+        return String::new()
+    }
+    if i1.is_empty() {
+        return i2.to_string()
+    }
+    if i2.is_empty() {
+        return i1.to_string()
+    }
     let mut im1=i1.split(',').collect::<Vec<_>>();
     let im2=i2.split(',').collect::<Vec<_>>();
     for i in im2 {
