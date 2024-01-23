@@ -236,89 +236,10 @@ fn get_crate_of_call(call: TokenStream) -> (String,Vec<String>) {
     (out,v_str)
 }
 
-static mut DEFINED_POLI_FNS: Vec<String>=vec![];
+static mut DEFINED_POLY_FNS: Vec<String>=vec![];
 
 /// ## Polimorphism
-/// A procedural macro to imitate polymorphysm which can be seen and found
-/// in many modern programming languages. Can be used similarly to an `fn`
-/// or `impl` declaration, but `polimorphism` allows for duplicate `fn` names
-/// with different signitures (types as parameters). This implementation of
-/// `polimorphism` bypasses the orphan rule with a `Local` type.
-/// 
-/// ## Examples
-/// ### - Init:
-/// To use `polimorphism!` it needs to be initialised. This can be done with a simple
-/// ```
-/// polimorphism!();
-/// ```
-/// closure. Don't initialise twice!
-/// ### - Fn Declaration:
-/// ```
-/// polimorphism!(
-///     pub fn func(n: i32, m: i32) -> i32 {
-///         n+m
-///     }
-///     pub fn func(n: f64, m: f64) -> f64 {
-///         n-m
-///     }
-/// );
-/// ```
-/// ### - Fn Usage:
-/// ```
-/// assert_eq!(polimorphism!(func(1,2)), 3);
-/// assert_eq!(polimorphism!(func(1.0,2.0)), -1.0);
-/// ```
-/// ### - Impl Declaration:
-/// ```
-/// polimorphism!(
-///     impl<T> Vec<T> {
-///         pub fn add_elem(&mut self, elem: T) {
-///             self.push(elem);
-///         }
-///         pub fn add_elem(&mut self, mut elems: Vec<T>) {
-///             self.append(&mut elems);
-///         }
-///     }
-/// );
-/// ```
-/// ### - Impl Usage:
-/// ```
-/// let mut v=vec![1,2,3];
-/// polimorphism!(v.add_elem(4));
-/// polimorphism!(v.add_elem(vec![5,6,7]));
-/// assert_eq!(v,vec![1,2,3,4,5,6,7]);
-/// ```
-/// ### - Impl Struct Method Declaration:
-/// ```
-/// polimorphism!(
-///     impl<T> Vec<T> {
-///         pub fn new() -> Self {
-///             Vec::new()
-///         }
-///         pub fn new<const N: usize>(arr: [T;N]) -> Self {
-///             Vec::from(arr)
-///         }
-///     }
-/// );
-/// ```
-/// ### - Impl Struct Method Usage:
-/// ```
-/// let mut v: Vec<i32>=vec![];
-/// assert_eq!(polimorphism!(Vec<i32>::new()),v);
-/// v.extend([1,2,3]);
-/// assert_eq!(polimorphism!(Vec<i32>::new([1,2,3])),v);
-/// ```
-/// ### - Polimorphism From Crate:
-/// ```
-/// polimorphism!(crate_name: func(1,2));
-/// polimorphism!(crate_name: v.add_elem(4));
-/// polimorphism!(crate_name: Vec<i32>::new([1,2,3]));
-/// ```
-/// ## Notes:
-/// - You may need to add lifetime specifiers to references (such as `&` or `&mut`)
-/// - When using `impl` declaration, functions with the same name should be declared in the same `polimorphism!` closure
-/// - Traits don't work on `impl` declarations using `polimorphism!`
-/// - All `impl` functions with the same name must have the same reference to `self` (`&self`, `&mut self` or `self`)
+/// See docs at `polymorphism!`
 #[proc_macro]
 pub fn polimorphism(_item: TokenStream) -> TokenStream {
     let s=_item.clone().into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
@@ -369,13 +290,13 @@ pub fn polimorphism(_item: TokenStream) -> TokenStream {
                 var=remove_first_last(&var.replace("Self ", &imp[1]).replace("self", "_self"));
                 let tr=format!("Polimorphism{}",func[1]);
                 if !fn_names.contains(&func[1]) {
-                    if !unsafe {DEFINED_POLI_FNS.contains(&func[1])} {
+                    if !unsafe {DEFINED_POLY_FNS.contains(&func[1])} {
                         out+=&format!("pub trait {} {{\n
                             fn __poliself_{}({}self) -> {}Self\n {{
                                 self
                             }}\n
                         }}\n",tr,func[1],refer,refer);
-                        unsafe {DEFINED_POLI_FNS.push(func[1].to_string());}
+                        unsafe {DEFINED_POLY_FNS.push(func[1].to_string());}
                     }
                     out+=&format!("impl<{}> {} for {} {{}}\n",imp[0],tr,imp[1]);
                     fn_names.push(func[1].to_string());
@@ -458,4 +379,90 @@ pub fn polimorphism(_item: TokenStream) -> TokenStream {
             return res.parse().unwrap()
         }
     } 
+}
+
+/// ## Polymorphism
+/// A procedural macro to imitate polymorphism which can be seen and found
+/// in many modern programming languages. Can be used similarly to an `fn`
+/// or `impl` declaration, but `polymorphism` allows for duplicate `fn` names
+/// with different signitures (types as parameters). This implementation of
+/// `polymorphism` bypasses the orphan rule with a `Local` type.
+/// 
+/// ## Examples
+/// ### - Init:
+/// To use `polymorphism!` it needs to be initialised. This can be done with a simple
+/// ```
+/// polymorphism!();
+/// ```
+/// closure. Don't initialise twice!
+/// ### - Fn Declaration:
+/// ```
+/// polymorphism!(
+///     pub fn func(n: i32, m: i32) -> i32 {
+///         n+m
+///     }
+///     pub fn func(n: f64, m: f64) -> f64 {
+///         n-m
+///     }
+/// );
+/// ```
+/// ### - Fn Usage:
+/// ```
+/// assert_eq!(polymorphism!(func(1,2)), 3);
+/// assert_eq!(polymorphism!(func(1.0,2.0)), -1.0);
+/// ```
+/// ### - Impl Declaration:
+/// ```
+/// polymorphism!(
+///     impl<T> Vec<T> {
+///         pub fn add_elem(&mut self, elem: T) {
+///             self.push(elem);
+///         }
+///         pub fn add_elem(&mut self, mut elems: Vec<T>) {
+///             self.append(&mut elems);
+///         }
+///     }
+/// );
+/// ```
+/// ### - Impl Usage:
+/// ```
+/// let mut v=vec![1,2,3];
+/// polymorphism!(v.add_elem(4));
+/// polymorphism!(v.add_elem(vec![5,6,7]));
+/// assert_eq!(v,vec![1,2,3,4,5,6,7]);
+/// ```
+/// ### - Impl Struct Method Declaration:
+/// ```
+/// polymorphism!(
+///     impl<T> Vec<T> {
+///         pub fn new() -> Self {
+///             Vec::new()
+///         }
+///         pub fn new<const N: usize>(arr: [T;N]) -> Self {
+///             Vec::from(arr)
+///         }
+///     }
+/// );
+/// ```
+/// ### - Impl Struct Method Usage:
+/// ```
+/// let mut v: Vec<i32>=vec![];
+/// assert_eq!(polymorphism!(Vec<i32>::new()),v);
+/// v.extend([1,2,3]);
+/// assert_eq!(polymorphism!(Vec<i32>::new([1,2,3])),v);
+/// ```
+/// ### - polymorphism From Crate:
+/// ```
+/// polymorphism!(crate_name: func(1,2));
+/// polymorphism!(crate_name: v.add_elem(4));
+/// polymorphism!(crate_name: Vec<i32>::new([1,2,3]));
+/// ```
+/// ## Notes:
+/// - You may need to add lifetime specifiers to references (such as `&` or `&mut`)
+/// - When using `impl` declaration, functions with the same name should be declared in the same `polymorphism!` closure
+/// - Traits don't work on `impl` declarations using `polymorphism!`
+/// - All `impl` functions with the same name must have the same reference to `self` (`&self`, `&mut self` or `self`)
+#[proc_macro]
+pub fn polymorphism(_item: TokenStream) -> TokenStream {
+    polimorphism(_item)
 }
